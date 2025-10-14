@@ -15,20 +15,26 @@ bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 bindkey  "^[[H"   beginning-of-line
 bindkey  "^[[F"   end-of-line
+bindkey "^P" up-line-or-search
+bindkey "^N" down-line-or-search
+
+_zsh_funcs="/usr/share/zsh/${ZSH_VERSION:h}/functions"
+if [[ -d $_zsh_funcs ]]; then
+  fpath=( "$_zsh_funcs" $fpath )
+fi
 
 if type brew &>/dev/null
 then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
   # FPATH="~/.zsh/completion:${FPATH}"
 fi
+
 fpath=(~/.zsh/completion $fpath)
 fpath+=~/.zfunc # autocompletions (poetry, etc...)
 fpath+=~/_task
 
 autoload -Uz compinit && compinit -i
-autoload -Uz compinit && compinit
 autoload -U colors && colors
-autoload -U +X bashcompinit && bashcompinit
 
 # case-insensitive matching only if there are no case-sensitive matches
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'

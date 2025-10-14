@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [ $# -lt 2 ]; then
+  echo "Rebase multiple branches onto one branch" >&2
+  echo "Usage: git ronto <base> <branch...>" >&2
+  exit 2
+fi
+
+base="$1"; shift
+branches=("$@")
+
+# Remember starting branch to restore later.
+start_branch="$(git branch --show-current 2>/dev/null || echo "")"
+
+rebased=()
+failed=()
+
+# Helpers
+is_clean_worktree() {
+  git diff --quiet && git diff --cached --quiet
+}
+
+branch_exists() {
+  git rev-parse --verify --quiet "$1" >/dev/null
+}
+
+if ! is_clean_worktree; then
+  echo "⚠️  Dirty worktree. Commit/stash changes first."
+  exit 1
+fi
+
+for b in "${branches[@]}"; do
+  echo "────────────────────────────────────────────────────────"
+  echo "🔁  Processing: $b  (onto $base)"
+
+  # Validate target branch exists
+  if ! branch_exists "$b"; then
+    echo "⚠️  Branch not found: $b"
+    failed+=("$b (not found)")
+    continue
+  fi
+
+
+  # Switch to branch
+  if ! git switch -q "$b"; then
+    echo "⚠️  Could not switch to $b"
+    failed+=("$b (switch failed)")
+    continue
+  fi
+
+
+  # Attempt rebase
+  echo "↪️  Rebasing $b onto $base..."
+  if git rebase "$base" --update-refs; then
+    echo "✅  Rebased: $b"
+    rebased+=("$b")
+  else
+    echo "❌  Conflict or error while rebasing $b — aborting"
+    # Always attempt abort; ignore abort failure in case rebase already ended
+    git rebase --abort >/dev/null 2>&1 || true
+    failed+=("$b (conflicts)")
+    # Continue to next branch
+  fi
+done
+
+# Restore starting branch if we had one and it's still valid
+if [ -n "$start_branch" ] && branch_exists "$start_branch"; then
+  git switch -q "$start_branch" || true
+fi
+
+echo
+echo "==================== SUMMARY ===================="
+echo "Base: $base"
+echo "Rebased (${#rebased[@]}): ${rebased[*]:-—}"
+echo "Failed  (${#failed[@]}): ${failed[*]:-—}"
+echo "================================================="
+
+# Exit non-zero if any failures occurred
+[ ${#failed[@]} -eq 0 ]

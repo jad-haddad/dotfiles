@@ -1,4 +1,41 @@
 zstyle ':completion:*:*:git*:*' ignored-patterns '*ORIG_HEAD'
 zstyle ':completion::complete:git:*:*' ignored-patterns 'check*-*'
+zstyle ':completion:*:*:git*:*' ignored-patterns 'origin'
+zstyle ':completion:*:*:git:*' aliases true
+zstyle ':completion:*:*:git:*' user-commands ronto:'Rebase multiple branches onto a base'
 zstyle ':completion:*' menu select
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+_git-ronto() {
+  local -a branches remotes
+  local -A uniq
+  local state
+
+  # local + remote branches (filter out the noisy origin/HEAD)
+  branches=(${(f)"$(
+    git for-each-ref --format='%(refname:short)' \
+      refs/heads refs/remotes 2>/dev/null |
+    grep -v '^origin/HEAD$'
+  )"})
+
+  # add remote roots with a trailing slash so 'ori<TAB>' -> 'origin/'
+  remotes=(${(f)"$(git remote 2>/dev/null)"})
+  for r in $remotes; do
+    branches+="$r/"
+  done
+
+  # de-duplicate
+  for b in $branches; do uniq[$b]=1; done
+  branches=(${(@k)uniq})
+
+  _arguments -C \
+    '*:branch name:->branch'
+
+  case $state in
+    branch)
+      # -Q: keep slashes literal; show nice grouped list
+      _describe -t branches 'branch' branches -Q && return
+      compadd -Q -a branches
+      ;;
+  esac
+}
