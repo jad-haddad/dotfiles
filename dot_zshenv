@@ -12,3 +12,5 @@ export GPG_TTY=$(tty)
 
 # Docker Compose
 export TARGETARCH=arm64
+
+export EDITOR='nvim'

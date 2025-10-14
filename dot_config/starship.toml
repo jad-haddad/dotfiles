@@ -10,10 +10,14 @@ right_format = '$status $python'
 [docker_context]
     disabled = true
 
+[aws]
+    disabled = true
+
 [git_branch]
     format = '[$symbol$branch(:$remote_branch)]($style) '
 
 [python]
+    symbol = " "
     format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 
 [lua]
