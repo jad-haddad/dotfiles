@@ -1,6 +1,18 @@
 # Dotfiles - Powered by Chezmoi
 
 ## Installation
+
+### Prerequisites
+
+Before running the install script, ensure `curl` and `git` are installed on your system:
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update && sudo apt install -y curl git
+```
+
+### Quick Install
+
 To install the dotfiles, execute the provided `install.sh` script.
 ```bash
 ./install.sh
