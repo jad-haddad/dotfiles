@@ -36,6 +36,7 @@ packages:
       - 'ncdu' # disk usage
       - 'duf' # disk usage
       - 'gnupg' # gpg tools
+      - 'lm-sensors' # temp sensors
     brews:
       - 'antidote' # zsh plugin manager
       - 'neovim' # text editor
