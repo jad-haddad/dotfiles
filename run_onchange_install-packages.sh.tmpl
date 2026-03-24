@@ -1,0 +1,36 @@
+#!/bin/bash
+###################### PACKAGE INSTALLATION ######################
+
+# Shared tap (both macOS and Linux)
+brew tap veeso/termscp
+
+{{ if eq .chezmoi.os "darwin" -}}
+###################### MACOS ######################
+
+brew bundle --file=/dev/stdin <<EOF
+{{ range .packages.darwin.brews -}}
+brew {{ . | quote }}
+{{ end -}}
+EOF
+{{ end -}}
+
+{{ if eq .chezmoi.os "linux" -}}
+###################### LINUX #######################
+
+# Enable universe repository (needed for packages like delta)
+sudo add-apt-repository -y universe
+
+# Install apt packages
+sudo apt update && sudo apt install -y \
+{{ range .packages.linux.apts -}}
+{{ . | quote }} \
+{{ end -}}
+
+# Install Homebrew packages
+brew bundle --file=/dev/stdin <<EOF
+{{ range .packages.linux.brews -}}
+brew {{ . | quote }}
+{{ end -}}
+EOF
+
+{{ end -}}

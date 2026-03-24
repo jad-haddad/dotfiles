@@ -1,0 +1,289 @@
+name: Test Dotfiles Installation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Enable debug mode (keep container alive on failure for debugging)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  test-linux:
+    name: Test on Ubuntu 24.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Run dotfiles installation
+        run: |
+          export NONINTERACTIVE=1
+          export CI=true
+          ./install.sh
+        shell: bash
+        
+      - name: Verify Homebrew installation
+        run: |
+          # Setup brew environment
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          
+          if [ ! -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+            echo "❌ Homebrew not installed at expected location"
+            exit 1
+          fi
+          echo "✅ Homebrew installed"
+          echo "Homebrew prefix: $(brew --prefix)"
+        shell: bash
+        
+      - name: Verify Chezmoi installation
+        run: |
+          # Setup brew environment
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          
+          if ! command -v chezmoi &> /dev/null; then
+            echo "❌ Chezmoi not in PATH"
+            exit 1
+          fi
+          echo "✅ Chezmoi installed: $(which chezmoi)"
+        shell: bash
+        
+      - name: Verify dotfiles exist
+        run: |
+          failed=0
+          
+          if [ ! -f ~/.zshrc ]; then
+            echo "❌ ~/.zshrc missing"
+            failed=1
+          else
+            echo "✅ ~/.zshrc exists"
+          fi
+          
+          if [ ! -f ~/.tmux.conf ]; then
+            echo "❌ ~/.tmux.conf missing"
+            failed=1
+          else
+            echo "✅ ~/.tmux.conf exists"
+          fi
+          
+          if [ ! -f ~/.gitconfig ]; then
+            echo "❌ ~/.gitconfig missing"
+            failed=1
+          else
+            echo "✅ ~/.gitconfig exists"
+          fi
+          
+          if [ ! -f ~/.zshenv ]; then
+            echo "❌ ~/.zshenv missing"
+            failed=1
+          else
+            echo "✅ ~/.zshenv exists"
+          fi
+          
+          if [ ! -f ~/.config/starship.toml ]; then
+            echo "❌ ~/.config/starship.toml missing"
+            failed=1
+          else
+            echo "✅ ~/.config/starship.toml exists"
+          fi
+          
+          exit $failed
+        shell: bash
+        
+      - name: Verify brew packages
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          
+          failed=0
+          
+          for pkg in neovim starship gh yazi lazydocker uv antidote gnupg; do
+            if brew list | grep -q "^${pkg}$"; then
+              echo "✅ ${pkg} (brew)"
+            else
+              echo "❌ ${pkg} (brew) not found"
+              failed=1
+            fi
+          done
+          
+          exit $failed
+        shell: bash
+        
+      - name: Verify apt packages
+        run: |
+          failed=0
+          
+          for pkg in ripgrep fzf fd-find delta zoxide; do
+            if dpkg -l | grep -q "^ii.*$pkg"; then
+              echo "✅ ${pkg} (apt)"
+            else
+              echo "❌ ${pkg} (apt) not found"
+              failed=1
+            fi
+          done
+          
+          exit $failed
+        shell: bash
+        
+      - name: Verify external repos cloned
+        run: |
+          if [ ! -d ~/.config/nvim ]; then
+            echo "❌ ~/.config/nvim not cloned"
+            exit 1
+          fi
+          echo "✅ Neovim config cloned"
+        shell: bash
+        
+      - name: Verify PATH configuration
+        run: |
+          if ! grep -q "brew shellenv" ~/.zprofile; then
+            echo "❌ brew shellenv not in ~/.zprofile"
+            exit 1
+          fi
+          echo "✅ PATH configured in ~/.zprofile"
+        shell: bash
+
+  test-macos:
+    name: Test on macOS 26 (Apple Silicon)
+    runs-on: macos-26
+    timeout-minutes: 10
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Run dotfiles installation
+        run: |
+          export NONINTERACTIVE=1
+          export CI=true
+          ./install.sh
+        shell: bash
+        
+      - name: Verify Homebrew installation
+        run: |
+          if ! command -v brew &> /dev/null; then
+            echo "❌ Homebrew not in PATH"
+            exit 1
+          fi
+          echo "✅ Homebrew installed: $(which brew)"
+          echo "Homebrew prefix: $(brew --prefix)"
+        shell: bash
+        
+      - name: Verify Chezmoi installation
+        run: |
+          if ! command -v chezmoi &> /dev/null; then
+            echo "❌ Chezmoi not in PATH"
+            exit 1
+          fi
+          echo "✅ Chezmoi installed: $(which chezmoi)"
+        shell: bash
+        
+      - name: Verify dotfiles exist
+        run: |
+          failed=0
+          
+          if [ ! -f ~/.zshrc ]; then
+            echo "❌ ~/.zshrc missing"
+            failed=1
+          else
+            echo "✅ ~/.zshrc exists"
+          fi
+          
+          if [ ! -f ~/.tmux.conf ]; then
+            echo "❌ ~/.tmux.conf missing"
+            failed=1
+          else
+            echo "✅ ~/.tmux.conf exists"
+          fi
+          
+          if [ ! -f ~/.gitconfig ]; then
+            echo "❌ ~/.gitconfig missing"
+            failed=1
+          else
+            echo "✅ ~/.gitconfig exists"
+          fi
+          
+          if [ ! -f ~/.zshenv ]; then
+            echo "❌ ~/.zshenv missing"
+            failed=1
+          else
+            echo "✅ ~/.zshenv exists"
+          fi
+          
+          if [ ! -f ~/.config/starship.toml ]; then
+            echo "❌ ~/.config/starship.toml missing"
+            failed=1
+          else
+            echo "✅ ~/.config/starship.toml exists"
+          fi
+          
+          exit $failed
+        shell: bash
+        
+      - name: Verify brew packages
+        run: |
+          failed=0
+          
+          for pkg in neovim starship gh antidote gnupg; do
+            if brew list | grep -q "^${pkg}$"; then
+              echo "✅ ${pkg} (brew)"
+            else
+              echo "❌ ${pkg} (brew) not found"
+              failed=1
+            fi
+          done
+          
+          # Check for macOS-specific packages
+          for pkg in ripgrep fzf fd zoxide; do
+            if brew list | grep -q "^${pkg}$"; then
+              echo "✅ ${pkg} (brew - macOS specific)"
+            else
+              echo "❌ ${pkg} (brew) not found"
+              failed=1
+            fi
+          done
+          
+          exit $failed
+        shell: bash
+        
+      - name: Verify external repos cloned
+        run: |
+          if [ ! -d ~/.config/nvim ]; then
+            echo "❌ ~/.config/nvim not cloned"
+            exit 1
+          fi
+          echo "✅ Neovim config cloned"
+        shell: bash
+        
+      - name: Verify PATH configuration
+        run: |
+          if ! grep -q "brew shellenv" ~/.zprofile 2>/dev/null; then
+            echo "❌ brew shellenv not in ~/.zprofile"
+            exit 1
+          fi
+          echo "✅ PATH configured in ~/.zprofile"
+        shell: bash
+        
+      - name: Test summary
+        if: always()
+        run: |
+          echo ""
+          echo "═══════════════════════════════════════════════════════════════"
+          echo "  macOS Test Complete"
+          echo "═══════════════════════════════════════════════════════════════"
+          echo ""
+          echo "All tests passed!"
+        shell: bash

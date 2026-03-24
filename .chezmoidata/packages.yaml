@@ -11,7 +11,6 @@ packages:
       - 'tree' # directory listing
       - 'htop' # process viewer
       - 'git-delta' # git diff viewer
-      - 'sketchybar' # status bar
       - 'tree-sitter' # syntax highlighting
       - 'lesspipe' # less file viewer
       - 'docker-completion' # docker completion
@@ -33,12 +32,17 @@ packages:
       - 'zoxide' # directory jump
       - 'tree' # directory listing
       - 'htop' # process viewer
-      - 'git-delta' # git diff viewer
+      - 'delta' # git diff viewer (git-delta on macOS)
       - 'ncdu' # disk usage
       - 'duf' # disk usage
-      - 'snapd' # snap package manager
-    snaps:
-      - name: 'nvim' # text editor
-      - name: 'astral-uv' # python dependency manager
-        channel: "latest/candidate"
+      - 'gnupg' # gpg tools
+    brews:
+      - 'antidote' # zsh plugin manager
+      - 'neovim' # text editor
+      - 'starship' # prompt
+      - 'gh' # github cli
+      - 'gnupg' # gpg tools
+      - 'lazydocker' # docker tui
+      - 'yazi' # file manager
+      - 'uv' # python dependency manager
 

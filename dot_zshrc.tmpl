@@ -69,10 +69,17 @@ export PATH="$AWSPATH:$PATH"
 
 . ~/.zsh_aliases
 . ~/.zsh_completion
+{{ if eq .chezmoi.os "linux" -}}
+# Linuxbrew setup
+if [[ -d /home/linuxbrew/.linuxbrew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+{{ end -}}
+
 {{ if eq .chezmoi.os "darwin" -}}
 . $(brew --prefix)/share/antidote/antidote.zsh
 {{ else if eq .chezmoi.os "linux" -}}
-. ~/.antidote/antidote.zsh
+. $(brew --prefix)/share/antidote/antidote.zsh
 {{ end -}}
 
 # Load ZSH plugins
