@@ -13,11 +13,24 @@ sudo apt update && sudo apt install -y curl git
 
 ### Quick Install
 
-To install the dotfiles, execute the provided `install.sh` script.
+Install dotfiles with a single command (no manual cloning required):
+
 ```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/jad-haddad/dotfiles/main/install.sh)
+```
+
+This will automatically:
+1. Clone the dotfiles repo
+2. Install Homebrew
+3. Install chezmoi
+4. Apply your dotfiles
+
+Or, if you prefer to clone manually:
+```bash
+git clone https://github.com/jad-haddad/dotfiles.git
+cd dotfiles
 ./install.sh
 ```
-Then follow the instructions.
 
 ## Brew Packages
 * Brew packages are installed in the script `run_onchange_install-packages.sh.tmpl`
@@ -61,7 +74,7 @@ This script will:
 
 Automated tests run on every push and pull request via GitHub Actions:
 
-![Test Status](https://github.com/JadHADDAD92/dotfiles/workflows/Test%20Dotfiles%20Installation/badge.svg)
+![Test Status](https://github.com/jad-haddad/dotfiles/workflows/Test%20Dotfiles%20Installation/badge.svg)
 
 **Test Matrix:**
 - **Linux:** Ubuntu 24.04 (x64)
@@ -75,7 +88,7 @@ To test manually on a fresh system:
 
 ```bash
 # Clone the repository (or download install.sh)
-git clone https://github.com/JadHADDAD92/dotfiles.git
+git clone https://github.com/jad-haddad/dotfiles.git
 cd dotfiles
 
 # Run the installer
