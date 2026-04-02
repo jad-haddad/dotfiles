@@ -37,11 +37,18 @@ packages:
       - 'duf' # disk usage
       - 'gnupg' # gpg tools
       - 'lm-sensors' # temp sensors
+      - 'nvme-cli' # nvme tools
+      - 'hdparm' # HDD tools
+      - 'iotop' # check real-time disk usage
+      - 'powertop' # optimize power saving
+      - 'smartmontools' # SMART data
     brews:
       - 'antidote' # zsh plugin manager
+      - 'tealdeer' # tldr in rust
       - 'neovim' # text editor
       - 'starship' # prompt
       - 'gh' # github cli
+      - 'dtop' # docker top
       - 'gnupg' # gpg tools
       - 'lazydocker' # docker tui
       - 'yazi' # file manager
