@@ -1,0 +1,6 @@
+#!/bin/bash
+{{ if eq .chezmoi.os "linux" -}}
+systemctl --user daemon-reload
+systemctl --user enable ssh-agent.service
+systemctl --user start ssh-agent.service
+{{ end -}}
