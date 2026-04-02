@@ -1,3 +1,6 @@
 install.sh
 packages.yaml
 README.md
+chezmoi.toml
+tests/
+

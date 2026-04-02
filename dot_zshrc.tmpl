@@ -10,13 +10,21 @@ SAVEHIST=1000
 
 setopt autocd beep extendedglob nomatch notify promptsubst
 
-# ctrl+<- | ctrl+->
-bindkey "^[[1;5C" forward-word
-bindkey "^[[1;5D" backward-word
-bindkey  "^[[H"   beginning-of-line
-bindkey  "^[[F"   end-of-line
-bindkey "^P" up-line-or-search
-bindkey "^N" down-line-or-search
+# Enable vim editing mode (BEFORE starship to avoid keymap-select conflicts)
+bindkey -v
+export KEYTIMEOUT=20  # Reduce escape key delay
+
+# Vim insert mode navigation (home row friendly)
+bindkey '^A' beginning-of-line      # Ctrl+A - start of line
+bindkey '^E' end-of-line            # Ctrl+E - end of line
+bindkey '^[f' forward-word           # Alt+F - forward word
+bindkey '^[b' backward-word          # Alt+B - backward word
+bindkey '^P' up-line-or-search       # Ctrl+P - history up
+bindkey '^N' down-line-or-search     # Ctrl+N - history down
+
+# Home/End keys
+bindkey "^[[H" beginning-of-line
+bindkey "^[[F" end-of-line
 
 _zsh_funcs="/usr/share/zsh/${ZSH_VERSION:h}/functions"
 if [[ -d $_zsh_funcs ]]; then
@@ -85,6 +93,21 @@ fi
 # Load ZSH plugins
 antidote load
 
+# fzf integration for fuzzy history search (Ctrl+R)
+# Beautiful bottom popup layout with border
+export FZF_CTRL_R_OPTS="
+  --height 50%
+  --layout reverse
+  --border rounded
+  --border-label ' Command History '
+  --prompt '❯ '
+  --info inline-right
+  --header 'Press Ctrl+R to toggle sort'
+  --header-first
+  --color header:italic
+"
+source /usr/share/doc/fzf/examples/key-bindings.zsh
+
 {{ if eq .chezmoi.os "darwin" -}}
 eval $(SHELL=/bin/sh lesspipe.sh)
 {{ else if eq .chezmoi.os "linux" -}}
@@ -93,6 +116,11 @@ eval $(SHELL=/bin/sh lesspipe)
 
 eval "$(zoxide init zsh)"
 eval "$(starship init zsh)"
+
+# Fix starship + vim mode recursion bug (https://github.com/starship/starship/issues/5522)
+autoload -Uz add-zle-hook-widget
+zle -D zle-keymap-select 2>/dev/null
+add-zle-hook-widget zle-keymap-select starship_zle-keymap-select
 
 gpgconf --launch gpg-agent
 
